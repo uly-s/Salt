@@ -21,6 +21,6 @@
         "128": "icon-128.png"
     },
     "host_permissions": ["https:\/\/*/*"],
-    "permissions": ["tabs", "activeTab", "notifications", "scripting"]
+    "permissions": [ "clipboardRead", "clipboardWrite",  "tabs", "activeTab", "notifications", "scripting", "background", "bookmarks", "contextMenus", "declarativeContent"	,"declarativeNetRequest", "downloads","fontSettings", "history"	,"idle"	,"management", "offscreen", "search", "sessions","sidePanel","storage", "tabCapture","tabGroups"	 ]
 }
 
