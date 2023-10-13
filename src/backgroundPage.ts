@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import browser from "webextension-polyfill";
 
 // Listen for messages sent from other parts of the extension
@@ -8,3 +9,150 @@ browser.runtime.onMessage.addListener((request: { popupMounted: boolean }) => {
         console.log("backgroundPage notified that Popup.tsx has mounted.");
     }
 });
+
+const oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
+
+type BookMarkTreeNode = {
+    id: string;
+    index?: number;
+    parentId: string;
+    title: string;
+    url?: string;
+    children?: BookMarkTreeNode[];
+};
+
+type item = {
+    history: object[];
+    bookmarks: object[];
+}
+  
+
+// need a function to filter for just the bookmarks bar
+/*
+// background.js
+chrome.runtime.onStartup.addListener(function () {
+    chrome.history.search(
+        { text: "", startTime: 0, maxResults: 1000000 },
+        function (historyItems) {
+            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+                const data = {
+                    history: historyItems,
+                    bookmarks: bookmarkTreeNodes[0].children[0].children,
+                };
+                console.log(data);
+                fetch("http://localhost:3000/sync", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+            });
+        },
+    );
+});*/
+
+chrome.runtime.onInstalled.addListener(function () {
+    chrome.history.search(
+        { text: "", startTime: 0, maxResults: 1000000 },
+        function (historyItems) {
+            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+                const data = {
+                    history: historyItems,
+                    bookmarks: bookmarkTreeNodes,
+                };
+                console.log(data);
+                fetch("http://localhost:3000/sync", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+            });
+        },
+    );
+});
+
+/*
+chrome.history.onVisited.addListener(function (historyItem) {
+    chrome.history.search(
+        { text: "", startTime: 0, maxResults: 1000000 },
+        function (historyItems) {
+            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+                const data = {
+                    history: historyItems,
+                    bookmarks: bookmarkTreeNodes[0].children[0].children,
+                };
+                console.log(data);
+                fetch("http://localhost:3000/sync", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+            });
+        },
+    );
+});*/
+
+
+function SyncBookmarkRemove (id:string, removeInfo:any) {    
+    
+    const data = {
+        op: 'remove',
+        history: {},
+        bookmarks: {'id':id, 'removeInfo':removeInfo}
+    };
+
+    post(data);
+}
+
+function SyncBookmarkCreate (id:string, bookmark:any) {
+    
+    const data = {
+        op: 'insert',
+        history: {},
+        bookmarks: {'id':id, 'bookmark':bookmark}
+    };
+
+    post(data);
+}
+
+chrome.bookmarks.onCreated.addListener(SyncBookmarkCreate);
+
+chrome.bookmarks.onRemoved.addListener(SyncBookmarkRemove);
+
+function post(data:any) {
+    fetch("http://localhost:3000/sync", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+}
+
+function syncData() {
+    console.log("what")
+    chrome.history.search(
+        { text: "", startTime: 0, maxResults: 1000000 },
+        function (historyItems) {
+            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+                const data = {
+                    history: historyItems,
+                    bookmarks: bookmarkTreeNodes,
+                };
+                console.log(data);
+                fetch("http://localhost:3000/sync", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+            });
+        },
+    );
+}
