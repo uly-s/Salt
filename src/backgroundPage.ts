@@ -74,28 +74,17 @@ chrome.runtime.onInstalled.addListener(function () {
     );
 });
 
-/*
-chrome.history.onVisited.addListener(function (historyItem) {
-    chrome.history.search(
-        { text: "", startTime: 0, maxResults: 1000000 },
-        function (historyItems) {
-            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
-                const data = {
-                    history: historyItems,
-                    bookmarks: bookmarkTreeNodes[0].children[0].children,
-                };
-                console.log(data);
-                fetch("http://localhost:3000/sync", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                });
-            });
-        },
-    );
-});*/
+
+chrome.history.onVisited.addListener(SyncHistoryVisited);
+
+function SyncHistoryVisited (entry:any) {
+    const data = {
+        op: 'append',
+        history: {'entry':entry},
+        bookmarks: {}
+    };
+    post(data);
+}
 
 
 function SyncBookmarkRemove (id:string, removeInfo:any) {    
@@ -116,6 +105,17 @@ function SyncBookmarkCreate (id:string, bookmark:any) {
         history: {},
         bookmarks: {'id':id, 'bookmark':bookmark}
     };
+
+    post(data);
+}
+
+function SyncBookmarkMove (id:string, moveInfo:any) {
+    
+    const data = {
+        op: 'move',
+        history: {},
+        bookmarks: {'id':id, 'moveInfo': moveInfo}
+    }; // server will have to get
 
     post(data);
 }
