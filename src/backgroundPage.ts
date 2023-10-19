@@ -124,35 +124,24 @@ chrome.bookmarks.onCreated.addListener(SyncBookmarkCreate);
 
 chrome.bookmarks.onRemoved.addListener(SyncBookmarkRemove);
 
+
+
 function post(data:any) {
     fetch("http://localhost:3000/sync", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                });
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
 }
 
-function syncData() {
-    console.log("what")
-    chrome.history.search(
-        { text: "", startTime: 0, maxResults: 1000000 },
-        function (historyItems) {
-            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
-                const data = {
-                    history: historyItems,
-                    bookmarks: bookmarkTreeNodes,
-                };
-                console.log(data);
-                fetch("http://localhost:3000/sync", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                });
-            });
-        },
-    );
-}
+const ws = new WebSocket('ws://localhost:3001');
+
+ws.onopen = (event) => {
+    console.log('websocket open');
+    ws.send('hello');
+  };
+ws.onmessage = (event) => {
+    console.log('received: %s', event.data);
+};
