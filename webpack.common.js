@@ -4,7 +4,6 @@ module.exports = {
     entry: {
         backgroundPage: path.join(__dirname, "src/backgroundPage.ts"),
         serviceWorker: path.join(__dirname, "src/service-worker.js"),
-        popup: path.join(__dirname, "src/popup/index.tsx"),
     },
     output: {
         path: path.join(__dirname, "dist/js"),

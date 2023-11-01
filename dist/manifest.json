@@ -1,4 +1,3 @@
-
 {
     "manifest_version": 3,
     "name": "Obsidian Integrator",
@@ -21,11 +20,37 @@
         "48": "icon-48.png",
         "128": "icon-128.png"
     },
-    "host_permissions": ["https:\/\/*/*", "http://localhost:3000/"],
-    "permissions": [ "clipboardRead", "clipboardWrite",  "tabs", "activeTab", "notifications", "scripting", "background", "bookmarks", "contextMenus", "declarativeContent"	,"declarativeNetRequest", "downloads","fontSettings", "history"	,"idle"	,"management", "offscreen", "search", "sessions","sidePanel","storage", "tabCapture","tabGroups"	 ],
+    "host_permissions": [
+        "https:\/\/*/*",
+        "http://localhost:3000/"
+    ],
+    "permissions": [
+        "clipboardRead",
+        "clipboardWrite",
+        "tabs",
+        "activeTab",
+        "notifications",
+        "scripting",
+        "background",
+        "bookmarks",
+        "contextMenus",
+        "declarativeContent",
+        "declarativeNetRequest",
+        "downloads",
+        "fontSettings",
+        "history",
+        "idle",
+        "management",
+        "offscreen",
+        "search",
+        "sessions",
+        "sidePanel",
+        "storage",
+        "tabCapture",
+        "tabGroups"
+    ],
     "content_security_policy": {
         "extension_pages": "script-src 'self' http://localhost:3000; object-src 'self'",
         "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';"
-    } 
+    }
 }
-
