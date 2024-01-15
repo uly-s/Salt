@@ -1,0 +1,56 @@
+{
+    "manifest_version": 3,
+    "name": "Obsidian Integrator",
+    "description": "For syncing browser data with desktop Obsidian.",
+    "version": "1.0.0",
+    "action": {
+        "default_icon": {
+            "16": "icon-16.png",
+            "48": "icon-48.png",
+            "128": "icon-128.png"
+        },
+        "default_popup": "index.html"
+    },
+    "background": {
+        "service_worker": "js/backgroundPage.js",
+        "type": "module"
+    },
+    "icons": {
+        "16": "icon-16.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png"
+    },
+    "host_permissions": [
+        "https:\/\/*/*",
+        "http://localhost:3000/"
+    ],
+    "permissions": [
+        "clipboardRead",
+        "clipboardWrite",
+        "tabs",
+        "activeTab",
+        "notifications",
+        "scripting",
+        "background",
+        "bookmarks",
+        "contextMenus",
+        "declarativeContent",
+        "declarativeNetRequest",
+        "downloads",
+        "fontSettings",
+        "history",
+        "idle",
+        "management",
+        "offscreen",
+        "search",
+        "sessions",
+        "sidePanel",
+        "storage",
+        "tabCapture",
+        "tabGroups"
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' http://localhost:3000; object-src 'self'",
+        "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';"
+    }
+}
