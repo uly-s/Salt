@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Obsidian Integrator",
-    "description": "For syncing browser data with desktop Obsidian.",
+    "name": "Salt",
+    "description": "Multitool",
     "version": "1.0.0",
     "action": {
         "default_icon": {
@@ -12,7 +12,7 @@
         "default_popup": "index.html"
     },
     "background": {
-        "service_worker": "js/backgroundPage.js",
+        "service_worker": "backgroundPage.js",
         "type": "module"
     },
     "icons": {
