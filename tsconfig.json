@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+      "target": "es5",
+      "module": "ESNext",
+      "strict": true,
+      "outDir": "./dst",
+      "esModuleInterop": true,
+      "types": ["chrome"],
+    }
+  }

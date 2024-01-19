@@ -1,97 +1,105 @@
-// when a tab group is opened, move it to the right of the last tab group, but to the left of ungrouped tabs
-chrome.tabGroups.onUpdated.addListener(function(group) {
-    chrome.tabs.query({ currentWindow: true }, function(tabs) {
-        var lastGroupedTabIndex = -1;
-        var lastGroupedTabGroupId = -1;
-        var firstUnGroupedTabIndex = -1;
-        
-        // Find the index of the last tab in the last tab group
-        for (var i = 0; i < tabs.length; i++) {
-            if (tabs[i].groupId !== -1) {
-                lastGroupedTabIndex = i;
-                lastGroupedTabGroupId = tabs[i].groupId;
-            } else {
-                firstUnGroupedTabIndex = i;
-                break;
-            }
-        }
-        
-        // Move the tab group to the right of the last tab group
-        chrome.tabGroups.move(group.groupId, { index: lastGroupedTabIndex + 1 });
+/* eslint-disable prettier/prettier */
+import browser from "webextension-polyfill";
+// Listen for messages sent from other parts of the extension
+browser.runtime.onMessage.addListener(function (request) {
+    // Log statement if request.popupMounted is true
+    // NOTE: this request is sent in `popup/component.tsx`
+    if (request.popupMounted) {
+        console.log("backgroundPage notified that Popup.tsx has mounted.");
+    }
+});
+var oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
+// need a function to filter for just the bookmarks bar
+/*
+// background.js
+chrome.runtime.onStartup.addListener(function () {
+    chrome.history.search(
+        { text: "", startTime: 0, maxResults: 1000000 },
+        function (historyItems) {
+            chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+                const data = {
+                    history: historyItems,
+                    bookmarks: bookmarkTreeNodes[0].children[0].children,
+                };
+                console.log(data);
+                fetch("http://localhost:3000/sync", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+            });
+        },
+    );
+});*/
+chrome.runtime.onInstalled.addListener(function () {
+    chrome.history.search({ text: "", startTime: 0, maxResults: 1000000 }, function (historyItems) {
+        chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
+            var data = {
+                history: historyItems,
+                bookmarks: bookmarkTreeNodes,
+            };
+            console.log(data);
+            fetch("http://localhost:3000/sync", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+        });
     });
 });
-
-// var groups = [];
-
-// function syncGroups() {
-//     chrome.tabGroups.query({}, function(_groups) {
-//         groups = _groups;
-//     });
-// }
-
-// chrome.tabGroups.query({}, function(_groups) {
-//     // Clear the original array
-//     groups.length = 0;
-
-//     // Push new items into it
-//     Array.prototype.push.apply(groups, _groups);
-// });
-
-    // console.log(group);
-    // chrome.tabs.query({ currentWindow: true }, function(tabs) {
-    //     // Find the index of the last tab in the last tab group
-    //     var lastGroupedTabIndex = -1;
-    //     var lastGroupedTabGroupId = -1;
-    //     var firstUnGroupedTabIndex = -1;
-    //     for (var i = 0; i < tabs.length; i++) {
-    //         if (tabs[i].groupId !== -1) {
-    //             lastGroupedTabIndex = i;
-    //             lastGroupedTabGroupId = tabs[i].groupId;
-    //             console.log("Last Grouped Tab Index: " + lastGroupedTabIndex);
-    //         }
-    //         else {
-    //             firstUnGroupedTabIndex = i;
-    //             console.log("First Ungrouped Tab Index: " + firstUnGroupedTabIndex);
-    //             break;
-    //         }
-    //     }
-    
-    //     // Move the tab group to the right of the last tab group
-    //     chrome.tabGroups.move(lastGroupedTabGroupId, { index: firstUnGroupedTabIndex - 1});
-
-// chrome.tabGroups.query({}, function(_groups) {
-//     console.log("From Query")
-//     console.log(_groups);
-//     console.log("From Global")
-//     console.log(groups);
-
-chrome.tabs.onActivated.addListener(function(activeInfo) {
-    chrome.tabs.query({ currentWindow: true }, function(tabs) {
-        // var selectedTabId = activeInfo.tabId;
-        // var selectedGroupId = -1;
-
-        // // Find the group ID of the selected tab
-        // for (var i = 0; i < tabs.length; i++) {
-        //     if (tabs[i].id === selectedTabId) {
-        //         selectedGroupId = tabs[i].groupId;
-        //         break;
-        //     }
-        // }
-
-        // // Set selectedGroupId to 0 if it's still -1
-        // if (selectedGroupId === -1) {
-        //     selectedGroupId = 0;
-        // }
-
-        // // Collapse all tab groups besides the selected one
-        // for (var i = 0; i < tabs.length; i++) {
-        //     if (tabs[i].groupId !== selectedGroupId) {
-        //         chrome.tabGroups.update(tabs[i].groupId, { collapsed: true });
-        //     } else {
-        //         chrome.tabGroups.update(tabs[i].groupId, { collapsed: false });
-        //     }
-        // }
-
-
+chrome.history.onVisited.addListener(SyncHistoryVisited);
+function SyncHistoryVisited(entry) {
+    var data = {
+        op: 'append',
+        history: { 'entry': entry },
+        bookmarks: {}
+    };
+    post(data);
+}
+function SyncBookmarkRemove(id, removeInfo) {
+    var data = {
+        op: 'remove',
+        history: {},
+        bookmarks: { 'id': id, 'removeInfo': removeInfo }
+    };
+    post(data);
+}
+function SyncBookmarkCreate(id, bookmark) {
+    var data = {
+        op: 'insert',
+        history: {},
+        bookmarks: { 'id': id, 'bookmark': bookmark }
+    };
+    post(data);
+}
+function SyncBookmarkMove(id, moveInfo) {
+    var data = {
+        op: 'move',
+        history: {},
+        bookmarks: { 'id': id, 'moveInfo': moveInfo }
+    }; // server will have to get
+    post(data);
+}
+chrome.bookmarks.onCreated.addListener(SyncBookmarkCreate);
+chrome.bookmarks.onRemoved.addListener(SyncBookmarkRemove);
+function post(data) {
+    fetch("http://localhost:3000/sync", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
     });
-});
+}
+var ws = new WebSocket('ws://localhost:3001');
+ws.onopen = function (event) {
+    console.log('websocket open');
+    ws.send('hello');
+};
+ws.onmessage = function (event) {
+    console.log('received: %s', event.data);
+};
